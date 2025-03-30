@@ -2,17 +2,35 @@ import { createRouter, createWebHistory } from 'vue-router';
 import index from '@/view/index.vue';
 import login from '@/view/user-service/login.vue';
 import register from '@/view/user-service/register.vue';
-import problem from '@/view/problem/index.vue';
+import problem from '@/view/problem/problem-index.vue';
+import train from '@/view/train/train-index.vue';
+import community from '@/view/community/community-index.vue';
+import about from '@/view/about/about-index.vue';
+import pk from '@/view/pk/pk-index.vue';
+import home from '@/view/home/home-index.vue';
 
 import error_401 from '@/view/error/401.vue';
 import error_404 from '@/view/error/404.vue';
 
 const routes = [
   {
+    path: '/',
+    redirect: '/index/home'
+  },
+  {
     path: '/index',
     name: 'index',
     component: index,
     children: [
+      {
+        path: '',
+        redirect: '/index/home'
+      },       
+      {
+        path: 'home',
+        name: 'home',
+        component: home,
+      },      
       {
         path: 'problem',
         name: 'problem',

@@ -1,10 +1,8 @@
 import axios from 'axios';
-import { useRouter } from 'vue-router';
-import { ElMessage } from 'element-plus'
 
-const router = useRouter();
 const instance = axios.create({
   timeout: 5000,
+  baseURL: '/api',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -13,9 +11,9 @@ const instance = axios.create({
 // 添加登录的token
 instance.interceptors.request.use(
   config => {
-    const token = localStorage.getItem('Authorization');
+    const token = localStorage.getItem('token');
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.token = `${token}`;
     }
     return config;
   },
@@ -32,7 +30,7 @@ instance.interceptors.response.use(
   },
   error => {
     if (error.response) {
-      switch (error.response.status) {
+      switch (error.response.code) {
         case 401:
           router.push('/401')
           break;

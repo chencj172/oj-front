@@ -13,10 +13,10 @@
             </nav>
             <!-- 已登录状态显示头像 -->
             <div v-if="isLogin" class="user-avatar">
-                <!-- <img :src="userInfo.icon" alt="用户头像" /> -->
-                <!-- <span>{{ userInfo.username }}</span> -->
-                <img src="/title.jpg" alt="用户头像" />
-                <span>chencj</span>
+                <img :src="userInfo.icon" alt="用户头像" />
+                <span>{{ userInfo.username }}</span>
+                <!-- <img src="/title.jpg" alt="用户头像" />
+                <span>chencj</span> -->
             </div>
 
             <!-- 未登录状态显示按钮 -->
@@ -33,6 +33,8 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { getUserInfo } from '@/api/user-service.js';
+import { ElMessage } from 'element-plus';
 
 const router = useRouter();
 const isLogin = ref(false);
@@ -41,7 +43,7 @@ const navItems = ref([
         name: '首页',
         icon: '/home.png',
         click_func: () => {
-            router.push('/index')
+            router.push('/index/home')
         },
     },
     {
@@ -85,12 +87,20 @@ const userInfo = ref({
     username: undefined
 });
 
-const checkLogin = async () => {
+const checkUserInfo = async () => {
     // 根据token检查用户信息
+    const res = await getUserInfo();
+    if(res.code != 200) {
+        isLogin.value = false;
+        ElMessage.error(res.message);
+    }
+    isLogin.value = true;
+    userInfo.value.icon = 'http://localhost:8081' + res.data.userAvatar;
+    userInfo.value.username = res.data.userName;
 }
 
 onMounted(() => {
-    checkLogin();
+    checkUserInfo();
 })
 </script>
   
@@ -125,6 +135,12 @@ onMounted(() => {
     display: flex;
     align-items: center;
     justify-content: center;
+
+    img {
+        width: 28px;
+        height: 28px;
+        margin-right: 10px;
+    }
 }
 
 .site-title {

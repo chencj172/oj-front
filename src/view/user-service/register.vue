@@ -3,17 +3,11 @@
         <el-card class="login-card">
             <h2 class="login-title">注册账号</h2>
             <el-form :model="registerFormData" :rules="registerRules" ref="registerForm">
-                <el-form-item prop="account">
-                    <el-input v-model="registerFormData.account" placeholder="请输入账号" prefix-icon="User" />
+                <el-form-item prop="userAccount">
+                    <el-input v-model="registerFormData.userAccount" placeholder="请输入账号" prefix-icon="User" />
                 </el-form-item>
-                <el-form-item prop="phone">
-                    <el-input v-model="registerFormData.phone" placeholder="请输入手机号" prefix-icon="Lock" />
-                </el-form-item>
-                <el-form-item prop="email">
-                    <el-input v-model="registerFormData.email" placeholder="请输入邮箱" prefix-icon="Lock" />
-                </el-form-item>
-                <el-form-item prop="password">
-                    <el-input v-model="registerFormData.password" placeholder="请输入密码" type="password" show-password
+                <el-form-item prop="userPassword">
+                    <el-input v-model="registerFormData.userPassword" placeholder="请输入密码" type="password" show-password
                         prefix-icon="Lock" />
                 </el-form-item>
                 <el-form-item prop="confirm_password">
@@ -34,49 +28,41 @@
 import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
+import { register } from '@/api/user-service';
 
 const router = useRouter();
 // 表单数据
 const registerFormData = ref({
-    account: '',
-    password: '',
+    userAccount: '',
+    userPassword: '',
     confirm_password: '',
-    phone: '',
-    email: '',
 });
 
 const registerForm = ref(null);
 
 // 表单验证规则
 const registerRules = {
-    account: [
+    userAccount: [
         { required: true, message: '请输入用户名', trigger: 'blur' },
         { min: 3, max: 10, message: '长度在 3 到 16 个字符', trigger: 'blur' },
     ],
-    password: [
+    userPassword: [
         { required: true, message: '请输入密码', trigger: 'blur' },
         { min: 6, max: 16, message: '长度在 6 到 16 个字符', trigger: 'blur' },
     ],
-    phone: [
-        { required: true, message: '请输入手机号', trigger: 'blur' },
-        {
-            pattern: /^1[3-9]\d{9}$/,
-            message: '请输入有效的手机号',
-            trigger: 'blur'
-        }
-    ],
-    email: [
-        {
-            pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-            message: '请输入有效的邮箱地址',
-            trigger: 'blur'
-        }
-    ],
+    // userPhone: [
+    //     { required: true, message: '请输入手机号', trigger: 'blur' },
+    //     {
+    //         pattern: /^1[3-9]\d{9}$/,
+    //         message: '请输入有效的手机号',
+    //         trigger: 'blur'
+    //     }
+    // ],
     confirm_password: [
         { required: true, message: '请再次输入密码', trigger: 'blur' },
         {
             validator: (rule, value, callback) => {
-                if (value !== loginForm.value.password) {
+                if (value !== registerFormData.value.userPassword) {
                     callback(new Error("两次输入的密码必须一致"))
                 } else {
                     callback();
@@ -89,19 +75,17 @@ const registerRules = {
 
 // 注册方法
 const handleRegister = async () => {
-    registerForm.value.validate((valid) => {
-        if (valid == false) {
-            ElMessage.error('信息格式填写有误');
-            return;
-        }
+    const res = await register({
+        userAccount: registerFormData.value.userAccount,
+        userPassword: registerFormData.value.userPassword
     });
 
-    if (response.data.code === 200) {
-        ElMessage.success('注册成功');
+    if (res.code === 200) {
+        ElMessage.success(res.message);
         // 跳转到登录页面
         router.push('/login');
     } else {
-        ElMessage.error(response.data.message || '注册失败');
+        ElMessage.error(res.message || '注册失败');
     }
 
 };
