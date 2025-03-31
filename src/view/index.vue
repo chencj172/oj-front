@@ -1,5 +1,5 @@
 <template>
-    <header class="header-container">
+    <div class="header-container">
         <div class="header-content">
             <img src="/title.jpg">
             <h1 class="site-title">COJ</h1>
@@ -15,8 +15,6 @@
             <div v-if="isLogin" class="user-avatar">
                 <img :src="userInfo.icon" alt="用户头像" />
                 <span>{{ userInfo.username }}</span>
-                <!-- <img src="/title.jpg" alt="用户头像" />
-                <span>chencj</span> -->
             </div>
 
             <!-- 未登录状态显示按钮 -->
@@ -25,9 +23,10 @@
                 <el-button type="danger" @click="router.push('/register')">注册</el-button>
             </div>
         </div>
-    </header>
+    </div>
 
     <router-view />
+    <site_footer></site_footer>
 </template>
   
 <script setup>
@@ -35,6 +34,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getUserInfo } from '@/api/user-service.js';
 import { ElMessage } from 'element-plus';
+import site_footer from '@/view/footer.vue';
 
 const router = useRouter();
 const isLogin = ref(false);
@@ -110,19 +110,18 @@ onMounted(() => {
 }
 
 .header-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background-color: #ffffff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     padding: 20px 0;
-    top: 0;
     z-index: 100;
 }
 
 .header-content {
     display: flex;
     align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
 
     img {
         width: 25px;
@@ -131,10 +130,10 @@ onMounted(() => {
 }
 
 .auth-buttons, .user-avatar {
-    margin-left: 200px;
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 0 0 0 200px;
 
     img {
         width: 28px;
@@ -144,9 +143,7 @@ onMounted(() => {
 }
 
 .site-title {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #333;
+    font-size: 40px;
     margin: 0;
 }
 
@@ -173,14 +170,4 @@ onMounted(() => {
     }
 }
 
-.nav-link {
-    text-decoration: none;
-    color: #333;
-    transition: color 0.2s;
-    font-weight: 500;
-}
-
-.nav-link:hover {
-    color: #1890ff;
-}
 </style>

@@ -9,7 +9,7 @@
 </head>
 
 <body>
-  <div id="app"></div>
+  <div id="app" style="font-size: 16px;"></div>
   <script type="module" src="/src/main.js"></script>
   <style>
     html,
@@ -21,6 +21,18 @@
       width: 100%;
     }
   </style>
+  <script>
+    function setRootFontSize() {
+      const baseWidth = 1920; // 你的设计稿宽度
+      const clientWidth = document.documentElement.clientWidth || window.innerWidth;
+      const fontSize = (clientWidth / baseWidth) * 100;
+      document.documentElement.style.fontSize = `${fontSize}px`;
+    }
+
+    // 页面加载和窗口大小变化时都设置根元素的字体大小
+    window.addEventListener('resize', setRootFontSize);
+    window.addEventListener('DOMContentLoaded', setRootFontSize);
+  </script>
 </body>
 
 </html>
