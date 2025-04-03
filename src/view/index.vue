@@ -11,20 +11,13 @@
                     </li>
                 </ul>
             </nav>
-            <!-- 已登录状态显示头像 -->
-            <div v-if="isLogin" class="user-avatar">
-                <img :src="userInfo.icon" alt="用户头像" />
-                <span>{{ userInfo.username }}</span>
-            </div>
 
-            <!-- 未登录状态显示按钮 -->
-            <div v-else class="auth-buttons">
-                <el-button type="primary" @click="router.push('/login')">登录</el-button>
-                <el-button type="danger" @click="router.push('/register')">注册</el-button>
-            </div>
+            <head_picture v-if="isLogin" :userInfo="userInfo" :isLogin="isLogin"></head_picture>
+            <login_register_button v-if="!isLogin"></login_register_button>
+
         </div>
     </div>
-
+    <el-backtop :right="100" :bottom="200" />
     <router-view />
     <site_footer></site_footer>
 </template>
@@ -34,6 +27,8 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getUserInfo } from '@/api/user-service.js';
 import { ElMessage } from 'element-plus';
+import head_picture from '@/view/user-service/components/head-picture.vue';
+import login_register_button from '@/view/user-service/components/login-register.vue';
 import site_footer from '@/view/footer.vue';
 
 const router = useRouter();
@@ -83,15 +78,16 @@ const navItems = ref([
     }
 ]);
 const userInfo = ref({
-    icon: undefined,
-    username: undefined
+    icon: '',
+    username: ''
 });
 
 const checkUserInfo = async () => {
     // 根据token检查用户信息
     const res = await getUserInfo();
-    if(res.code != 200) {
+    if (res.code != 200) {
         isLogin.value = false;
+        localStorage.removeItem("token");
         ElMessage.error(res.message);
     }
     isLogin.value = true;
@@ -99,8 +95,8 @@ const checkUserInfo = async () => {
     userInfo.value.username = res.data.userName;
 }
 
-onMounted(() => {
-    checkUserInfo();
+onMounted(async () => {
+    await checkUserInfo();
 })
 </script>
   
@@ -129,19 +125,6 @@ onMounted(() => {
     }
 }
 
-.auth-buttons, .user-avatar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 0 0 200px;
-
-    img {
-        width: 28px;
-        height: 28px;
-        margin-right: 10px;
-    }
-}
-
 .site-title {
     font-size: 40px;
     margin: 0;
@@ -149,7 +132,7 @@ onMounted(() => {
 
 .nav-menu {
     display: flex;
-    margin-left: 70px;
+    margin-left: 300px;
 }
 
 .nav-list {
@@ -169,5 +152,4 @@ onMounted(() => {
         cursor: pointer;
     }
 }
-
 </style>

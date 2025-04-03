@@ -6,7 +6,7 @@ import postCssPxToRem from 'postcss-pxtorem'
 export default defineConfig(({ command, mode }) => {
   // 引入开发环境变量的文件
   const env = loadEnv(mode, process.cwd());
-
+  
   return {
     plugins: [vue()],
     server: {

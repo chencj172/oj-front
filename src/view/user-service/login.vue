@@ -10,26 +10,24 @@
                     <el-input v-model="loginFormData.userPassword" placeholder="请输入密码" type="password" show-password
                         prefix-icon="Lock" />
                 </el-form-item>
-                <el-form-item>
-                    <el-button type="primary" @click="handleLogin" style="width: 100%">
-                        登录
-                    </el-button>
-                </el-form-item>
-                <el-form-item>
-                    <el-button link @click="toRegiter" style="width: 18%">
+                <el-button type="primary" @click="handleLogin" style="width: 100%">
+                    登录
+                </el-button>
+                <div class="footer-button">
+                    <el-button link @click="toRegiter">
                         注册账号
                     </el-button>
-                    <el-button link @click="toPhoneLogin" style="width: 18%; margin-left: 210px;">
+                    <el-button link @click="toPhoneLogin">
                         验证码登录
                     </el-button>
-                </el-form-item>
+                </div>
             </el-form>
         </el-card>
     </div>
 </template>
   
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
 import { login } from '@/api/user-service.js';
@@ -73,6 +71,16 @@ const handleLogin = async () => {
         ElMessage.error(res.message || '登录失败');
     }
 };
+
+const checkLoginStatus = () => {
+    if(localStorage.getItem("token") != undefined) {
+        router.push("/index");
+    }
+}
+
+onMounted(() => {
+    checkLoginStatus();
+})
 </script>
   
 <style scoped>
@@ -87,6 +95,16 @@ const handleLogin = async () => {
     align-items: center;
     height: 100%;
     background: url('/login_background.png');
+
+    button {
+        font-size: 15px;
+    }
+}
+
+.footer-button {
+    margin-top: 5px;
+    display: flex;
+    justify-content: space-between;
 }
 
 .login-card {
@@ -100,5 +118,6 @@ const handleLogin = async () => {
     text-align: center;
     margin-bottom: 20px;
     color: #333;
+    font-size: 30px;
 }
 </style>
