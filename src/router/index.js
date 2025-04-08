@@ -4,6 +4,8 @@ import login from '@/view/user-service/login.vue';
 import register from '@/view/user-service/register.vue';
 import problem from '@/view/problem/problem-index.vue';
 import problem_detail from '@/view/problem/components/problem-detail.vue';
+import problem_describe from '@/view/problem/components/problem-decsribe.vue';
+import problem_submissions from '@/view/problem/components/problem-submissions.vue';
 import train from '@/view/train/train-index.vue';
 import community from '@/view/community/community-index.vue';
 import about from '@/view/about/about-index.vue';
@@ -62,7 +64,24 @@ const routes = [
   {
     path: '/problem/detail',
     name: 'problem-detail',
-    component: problem_detail,
+    component: problem_detail,  
+    children: [
+      {
+        path: ':pid',
+        name: 'detail',
+        component: problem_detail,
+      },
+      {
+        path: 'describe/:pid',
+        name: 'describe',
+        component: problem_describe,
+      },
+      {
+        path: 'submissions/:pid',
+        name: 'submissions',
+        component: problem_submissions,
+      },
+    ]
   },
   {
     path: '/login',

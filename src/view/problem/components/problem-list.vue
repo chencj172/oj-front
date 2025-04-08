@@ -112,12 +112,14 @@ const getTagColor = (tag) => {
 };
 
 const show_detail = (pid) => {
+    // 请求题目数据，然后进行显示
     const c = router.resolve({
-        path: "/problem/detail",
+        name: 'detail',
+        params: {
+            pid: pid
+        }
     });
     window.open(c.href, "_blank");
-
-    console.log(pid);
 }
 
 // 每页显示条数变化的回调函数

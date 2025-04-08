@@ -21,6 +21,7 @@
     "github-markdown-css": "^5.8.1",
     "katex": "^0.16.21",
     "less": "^4.2.2",
+    "monaco-editor": "^0.52.2",
     "pinia": "^2.0.12",
     "postcss-px2rem": "^0.3.0",
     "postcss-pxtorem": "^6.1.0",

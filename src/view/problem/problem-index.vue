@@ -5,7 +5,7 @@
             <problemList></problemList>
         </div>
 
-        <!-- 每日一题 -->
+        <!-- 每日一题，题目标签 -->
         <div>
             <datepicker></datepicker>
             <problemLabel></problemLabel>
