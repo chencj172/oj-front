@@ -20,19 +20,28 @@
             </template>
         </div>
         <div>
-            <el-table :data="problemData" stripe class="problem-table">
+            <el-table :data="problemData" stripe class="problem-table" table-layout="auto">
                 <el-table-column prop="status" label="状态">
                     <template #default="scope">
                         <!-- 1表示通过；2表示正在尝试还没通过；3表示未尝试  -->
                         <el-icon v-if="scope.row.status == 1" style="color: green;"><Select /></el-icon>
-                        <el-icon v-else-if="scope.row.status == 2" style="color: rgb(255, 201, 38);"><KnifeFork /></el-icon>
+                        <el-icon v-else-if="scope.row.status == 2" style="color: rgb(255, 201, 38);">
+                            <KnifeFork />
+                        </el-icon>
                         <el-icon v-else-if="scope.row.status == 3"></el-icon>
                     </template>
                 </el-table-column>
                 <el-table-column prop="pid" label="题目ID" />
                 <el-table-column prop="pname" label="题目">
                     <template #default="scope">
-                        <span @click="show_detail(scope.row.pid)" class="pname">{{ scope.row.pname }}</span>
+                        <div class="pname-label">
+                            <span @click="show_detail(scope.row.pid)" class="pname">{{ scope.row.pname }}</span>
+                            <div class="tag-cloud">
+                                <span class="tag" v-for="label in scope.row.label" v-show="showLabel" :style="{
+                                    'background-color': getTagColor(label)
+                                }">{{ label }}</span>
+                            </div>
+                        </div>
                     </template>
                 </el-table-column>
                 <el-table-column prop="level" label="难度">
@@ -61,7 +70,9 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const searchText = ref();
 const showLabel = ref(false);
 const level = ref(['全部', '简单', '中等', '困难']);
@@ -88,8 +99,24 @@ const page_data_num = ref(20); // 每页显示的条数
 const switch_level = (index) => {
     selectedButton.value = index;
 }
+const colors = [
+    '#f0f9ff', '#e6f7ff', '#f6ffed', '#fff7e6',
+    '#fff0f6', '#f0f0ff', '#f6f6f6', '#e6fffb',
+    '#fff2e8', '#f9f0ff', '#e8f4ff', '#f5f5f5'
+];
+
+// 生成标签颜色
+const getTagColor = (tag) => {
+    const hash = tag.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+    return colors[hash % colors.length];
+};
 
 const show_detail = (pid) => {
+    const c = router.resolve({
+        path: "/problem/detail",
+    });
+    window.open(c.href, "_blank");
+
     console.log(pid);
 }
 
@@ -113,7 +140,8 @@ const initData = async () => {
             pid: '1111',
             pname: '回文数',
             level: i % 3 + 1,
-            ac_rate: 50 + '%'
+            ac_rate: 50 + '%',
+            label: ['回文', 'dfs', 'DP']
         })
     }
 }
@@ -141,14 +169,37 @@ onMounted(() => {
     margin: -80px 0 20px 0px;
 }
 
+.pname-label {
+    display: flex;
+}
+
 .pname {
     cursor: pointer;
+    width: 30%;
 }
 
 .problem-table {
     width: 95%;
     margin-left: 18px;
 }
+
+.tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+.tag {
+    display: inline-block;
+    padding: 0 4px 0 4px;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: default;
+    transition: all 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
 
 .first-row {
     display: flex;

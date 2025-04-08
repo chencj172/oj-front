@@ -1,7 +1,7 @@
 <template>
     <div class="header-container">
         <div class="header-content">
-            <img src="/title.jpg">
+            <img src="/website-logo.png">
             <h1 class="site-title">COJ</h1>
             <nav class="nav-menu">
                 <ul class="nav-list">
@@ -120,8 +120,8 @@ onMounted(async () => {
     align-items: center;
 
     img {
-        width: 25px;
-        height: 20px;
+        width: 30px;
+        height: 30px;
     }
 }
 
@@ -150,6 +150,8 @@ onMounted(async () => {
 
     img {
         cursor: pointer;
+        width: 25px;
+        height: 20px;
     }
 }
 </style>

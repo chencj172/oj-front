@@ -3,6 +3,7 @@ import index from '@/view/index.vue';
 import login from '@/view/user-service/login.vue';
 import register from '@/view/user-service/register.vue';
 import problem from '@/view/problem/problem-index.vue';
+import problem_detail from '@/view/problem/components/problem-detail.vue';
 import train from '@/view/train/train-index.vue';
 import community from '@/view/community/community-index.vue';
 import about from '@/view/about/about-index.vue';
@@ -57,7 +58,12 @@ const routes = [
         component: about,
       },
     ],
-  }, 
+  },
+  {
+    path: '/problem/detail',
+    name: 'problem-detail',
+    component: problem_detail,
+  },
   {
     path: '/login',
     name: 'login',
