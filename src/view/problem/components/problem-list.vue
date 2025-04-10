@@ -5,8 +5,8 @@
             <div>
                 <el-input v-model="searchText" style="width: 2.4rem; padding-right: 0.2rem;" size="small"
                     placeholder="请输入关键词..." :suffix-icon="Search" />
-                <el-button type="primary">搜索</el-button>
-                <el-button type="primary">重置</el-button>
+                <el-button type="primary" @click="searchProblem">搜索</el-button>
+                <el-button type="primary" @click="resetWord">重置</el-button>
             </div>
             <el-checkbox v-model="showLabel" label="标签" size="large" />
         </div>
@@ -57,11 +57,15 @@
     </div>
     <div class="limit-pnum">
         <div>
-            <el-pagination @change="page_change" v-model:current-page="current_page" background layout="prev, pager, next"
-                :total="1000" />
+            <el-pagination 
+                @change="page_change" 
+                v-model:current-page="page_num" 
+                v-model:page-size="page_size"
+                background layout="prev, pager, next"
+                :total="total" />
         </div>
         <div>
-            <el-select v-model="options_value" style="width: 1.4rem" @change="option_change" class="select-page">
+            <el-select v-model="page_size" style="width: 1.4rem" @change="option_change" class="select-page">
                 <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
         </div>
@@ -71,6 +75,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router';
+import { search } from '@/api/problem-service.js'
 
 const router = useRouter();
 const searchText = ref();
@@ -92,13 +97,45 @@ const options = ref([
         value: 100
     },
 ])
-const options_value = ref(20);
-const total_page = ref(0); // 总页数
-const current_page = ref(1); // 当前选择的页数
-const page_data_num = ref(20); // 每页显示的条数
-const switch_level = (index) => {
-    selectedButton.value = index;
+const page_size = ref(20);  // 每页显示条目个数
+const total = ref(0); // 总条目数
+const page_num = ref(1); // 当前选择的页数
+
+// 根据难度等级或者关键词搜索题目
+const searchProblem = async () => {
+    problemData.value = [];
+    let res = await search({
+        level: selectedButton.value == 0 ? undefined : selectedButton.value,
+        word: searchText.value,
+        pageNum: page_num.value,
+        pageSize: page_size.value
+    });
+
+    res.data.records.forEach((element) => {
+        problemData.value.push({
+            status: element.status == undefined ? 3 : element.status,
+            pid: 1000 + element.id,
+            pname: element.title,
+            level: element.level,
+            ac_rate: `${element.submitNum == 0 ? 0 : element.acceptNum / element.submitNum} %`,
+            label: ['回文', 'dfs', 'DP']
+        })
+    });
+    total.value = res.data.total;
 }
+
+// 重置关键词
+const resetWord = () => {
+    searchText.value = '';
+    searchProblem();
+}
+
+// 查看不同难度等级题目
+const switch_level = async (level) => {
+    selectedButton.value = level;
+    searchProblem();
+}
+
 const colors = [
     '#f0f9ff', '#e6f7ff', '#f6ffed', '#fff7e6',
     '#fff0f6', '#f0f0ff', '#f6f6f6', '#e6fffb',
@@ -124,32 +161,17 @@ const show_detail = (pid) => {
 
 // 每页显示条数变化的回调函数
 const option_change = () => {
-    page_data_num.value = options_value.value;
-    initData();
+    searchProblem();
 }
 
 // 页数变化
 const page_change = () => {
-    console.log(current_page.value);
+    searchProblem();
 }
 
-// 初始化题目数据
-const initData = async () => {
-    problemData.value = [];
-    for (let i = 0; i < page_data_num.value; i++) {
-        problemData.value.push({
-            status: i % 3 + 1,
-            pid: '1111',
-            pname: '回文数',
-            level: i % 3 + 1,
-            ac_rate: 50 + '%',
-            label: ['回文', 'dfs', 'DP']
-        })
-    }
-}
 
 onMounted(() => {
-    initData();
+    searchProblem();
 })
 </script>
 

@@ -1,5 +1,5 @@
 <template>
-    <Viewer :value="problemContent" :plugins="plugins" />
+    <Viewer :value="problem.content" :plugins="plugins" />
     <!-- <span>{{ route.params.pid }}</span> -->
 </template>
 
@@ -10,6 +10,7 @@ import math from '@bytemd/plugin-math-ssr';
 import gfm from '@bytemd/plugin-gfm';
 import 'katex/dist/katex.css';
 import { useRoute } from 'vue-router';
+import { getProblemById } from '@/api/problem-service';
 
 const route = useRoute();
 const plugins = [gfm(), math()];
@@ -25,13 +26,14 @@ const problem = ref({
 });
 
 
-const problemContent = ref(`# 输入两个整数，求这两个整数的和是多少
+const problemContent = ref(`
+## 输入两个整数，求这两个整数的和是多少
 
-## 输入格式
+### 输入格式
 
 输入两个整数 \\( A, B \\)，用空格隔开
 
-## 输出格式
+### 输出格式
 
 输出一个整数，表示这两个数的和
 
@@ -55,6 +57,23 @@ $E = mc^2$
 7
 \`\`\`
 `);
+
+const getProblemMsg = async () => {
+    let res = await getProblemById(route.params.pid - 1000);
+    console.log(res.data);
+    problem.value.id = res.data.id;
+    problem.value.title = res.data.title;
+    problem.value.content = res.data.content;
+    problem.value.submit_num = res.data.submitNum;
+    problem.value.accept_num = res.data.acceptNum;
+    problem.value.level = res.data.level;
+    console.log(problem.value.content);
+    console.log(problemContent.value);
+}
+
+onMounted(() => {
+    getProblemMsg();
+})
 </script>
 
 <style scoped lang="less"></style>
