@@ -14,3 +14,11 @@ export const getProblemById = (id) => {
         url: `/problem/getById/${id}`,
     });
 }
+
+export const judgeProblem = (data) => {
+    return request({
+        method: 'post',
+        url: '/problem/judge',
+        data: data
+    });
+}

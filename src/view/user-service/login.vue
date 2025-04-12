@@ -73,7 +73,7 @@ const handleLogin = async () => {
 };
 
 const checkLoginStatus = () => {
-    if(localStorage.getItem("token") != undefined) {
+    if (localStorage.getItem("token") != undefined) {
         router.push("/index");
     }
 }

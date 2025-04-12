@@ -35,9 +35,12 @@
 </template>
   
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import * as monaco from 'monaco-editor'
+import { ref, onMounted, onBeforeUnmount } from 'vue';
+import * as monaco from 'monaco-editor';
+import { useRoute } from 'vue-router';
+import { judgeProblem } from '@/api/problem-service.js';
 
+const route = useRoute();
 // 编辑器实例
 const editorContainer = ref(null)
 let editor = null
@@ -152,11 +155,15 @@ const handleDebug = () => {
 }
 
 // 提交代码
-const handleSubmit = () => {
-    const code = editor.getValue()
-    console.log('提交代码:', code)
-    // 这里添加实际提交逻辑
-    alert(`提交${selectedLanguage.value}代码到OJ系统`)
+const handleSubmit = async () => {
+    const code = editor.getValue();
+    let ret = await judgeProblem({
+        id: route.params.pid - 1000,
+        code: code
+    });
+    console.log(ret);
+    console.log('提交代码:', code);
+    console.log(route.params.pid - 1000);
 }
 </script>
   

@@ -34,14 +34,14 @@ export default defineConfig(({ command, mode }) => {
       postcss: {
         plugins: [
           postCssPxToRem({
-            // 自适应，px>rem转换
             rootValue: 100, //pc端建议：192，移动端建议：75；设计稿宽度的1 / 10
-            propList: ['*'], //  需要转换的属性，这里选择全部都进行转换
-            // selectorBlackList: [':root'], //不进行px转换的选择器
+            propList: ['*', '!border*'], // 不转换边框
             unitPrecision: 5, // 转换后的精度，即小数点位数
+            selectorBlackList: [/^html$/], // 不转换html元素
             replace: true, // 是否直接更换属性值而不添加备份属性
             mediaQuery: true, // 是否在媒体查询中也转换px为rem
-            minPixelValue: 1 // 设置要转换的最小像素值
+            minPixelValue: 1, // 设置要转换的最小像素值
+            // exclude: /node_modules/i
           })
         ]
       }

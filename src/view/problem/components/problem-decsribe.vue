@@ -67,8 +67,6 @@ const getProblemMsg = async () => {
     problem.value.submit_num = res.data.submitNum;
     problem.value.accept_num = res.data.acceptNum;
     problem.value.level = res.data.level;
-    console.log(problem.value.content);
-    console.log(problemContent.value);
 }
 
 onMounted(() => {
