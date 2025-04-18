@@ -30,7 +30,7 @@
 import { ref, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
-import { login } from '@/api/user-service.js';
+import { login, checkLogin } from '@/api/user-service.js';
 
 const router = useRouter();
 const loginForm = ref(null);
@@ -72,14 +72,16 @@ const handleLogin = async () => {
     }
 };
 
-const checkLoginStatus = () => {
-    if (localStorage.getItem("token") != undefined) {
-        router.push("/index");
+// 检查是否已经登录
+const checkUserLogin = async () => {
+    let res = await checkLogin();
+    if(res.data.code == 200) {
+        router.push('/');
     }
 }
 
 onMounted(() => {
-    checkLoginStatus();
+    checkUserLogin();
 })
 </script>
   

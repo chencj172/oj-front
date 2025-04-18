@@ -38,7 +38,7 @@ import site_header from '@/view/header.vue';
 import code_edit from './code-edit.vue';
 
 const activeTab = ref('description')
-const leftWidth = ref(700) // 初始左侧宽度
+const leftWidth = ref(750) // 初始左侧宽度
 const leftPanel = ref(null)
 const rightPanel = ref(null)
 let isDragging = false

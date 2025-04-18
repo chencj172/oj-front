@@ -22,3 +22,11 @@ export const judgeProblem = (data) => {
         data: data
     });
 }
+
+export const testCase = (data) => {
+    return request({
+        method: 'post',
+        url: '/problem/testCase',
+        data: data
+    });
+}

@@ -41,8 +41,6 @@ instance.interceptors.response.use(
         case 500:
           ElMessage.error('服务器故障')
           break;
-        default:
-          ElMessage.error('资源请求失败')
       }
     }
     return Promise.reject(error);

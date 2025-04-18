@@ -22,3 +22,10 @@ export const getUserInfo = () => {
         url: '/user/user-info',
     });
 }
+
+export const checkLogin = () => {
+    return request({
+        method: 'post',
+        url: '/user/checkLogin',
+    });
+}

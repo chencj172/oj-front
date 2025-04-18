@@ -32,13 +32,39 @@
             </button>
         </div>
     </div>
+    <!-- 测试样例 -->
+    <el-icon class="close-test-case" v-show="showTestCase" @click="showTestCase = false"><CloseBold /></el-icon>
+    <div class="test-case" v-show="showTestCase">
+        <div class="run-status">
+            <span>代码运行状态: </span>
+            <span :class="runStatus">{{ runStatus }}</span>
+        </div>
+        <div>输入: </div>
+        <el-input v-model="testCaseInput" />
+        <div>输出: </div>
+        <el-input v-model="testCaseOutput" disabled />
+        <div>
+            <span>运行时间: {{ runTime }}ms</span>
+        </div>
+    </div>
 </template>
   
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import * as monaco from 'monaco-editor';
 import { useRoute } from 'vue-router';
-import { judgeProblem } from '@/api/problem-service.js';
+import { judgeProblem, testCase } from '@/api/problem-service.js';
+import { useProblemStore } from '@/stores/problem';
+import { getTestCaseStatus } from '@/api/judge-service.js';
+
+const problrmStore = useProblemStore();
+// 测试样例相关
+const testCaseInput = ref();
+const testCaseOutput = ref();
+const runTime = ref('2');
+const runStatus = ref('Finished');
+const showTestCase = ref(false);
+
 
 const route = useRoute();
 // 编辑器实例
@@ -47,11 +73,14 @@ let editor = null
 
 // 语言配置
 const languages = ref([
-    { value: 'cpp', label: 'C++' },
-    { value: 'java', label: 'Java' },
+    { value: 'C', label: 'C' },
+    { value: 'C++', label: 'C++' },
+    { value: 'Java', label: 'Java' },
     { value: 'python', label: 'Python' },
-    { value: 'javascript', label: 'JavaScript' }
+    { value: 'JavaScript', label: 'JavaScript' }
 ])
+// 默认选择语言
+const selectedLanguage = ref('C++')
 
 // 字体大小
 const fontSize = ref(20);
@@ -71,9 +100,6 @@ const changeFontSize = () => {
         fontSize: fontSize.value  // 更新字体大小
     });
 }
-
-// 默认语言
-const selectedLanguage = ref('cpp')
 
 // 清除编辑器内容
 function resetEditorContent() {
@@ -120,7 +146,7 @@ onMounted(() => {
     editor = monaco.editor.create(editorContainer.value, {
         //   value: codeTemplates[selectedLanguage.value],
         language: selectedLanguage.value,
-        theme: 'vs-light',
+        theme: 'vs',
         automaticLayout: true,
         minimap: { enabled: false },
         fontSize: 20,
@@ -128,6 +154,7 @@ onMounted(() => {
         roundedSelection: true,
         scrollBeyondLastLine: false,
     });
+
 })
 
 // 销毁编辑器
@@ -141,30 +168,80 @@ onBeforeUnmount(() => {
 const changeLanguage = () => {
     if (editor) {
         const model = editor.getModel()
-        //   model.setValue(codeTemplates[selectedLanguage.value])
         monaco.editor.setModelLanguage(model, selectedLanguage.value)
     }
 }
 
+let isPolling = false;
+let testCaseTimeout = null;
+let testFinish = false;
+async function getStatus() {
+    if (isPolling || testFinish) return;
+    isPolling = true;
+    if (testCaseTimeout) clearTimeout(testCaseTimeout);
+
+    let ret = await getTestCaseStatus({ pid: route.params.pid - 1000 });
+    console.log(ret);
+
+    // 检查是否运行完成
+    if (ret.data.status != undefined && ret.data.status != 'padding') {
+        runStatus.value = ret.data.status;
+        if (ret.data.status == 'Finished') {
+            testCaseOutput.value = ret.data.testCaseResult;
+        } else {
+            testCaseOutput.value = ret.data.runError;
+        }
+        console.log(testCaseOutput.value);
+        testFinish = true;
+    }
+
+    isPolling = false;
+    testCaseTimeout = setTimeout(() => {
+        getStatus();
+    }, 200);
+}
+
 // 调试代码
-const handleDebug = () => {
-    const code = editor.getValue()
-    console.log('调试代码:', code)
-    // 这里添加实际调试逻辑
-    alert(`开始调试${selectedLanguage.value}代码`)
+const handleDebug = async () => {
+    const code = editor.getValue();
+    console.log(problrmStore.problemData);
+    let ret = await testCase({
+        pid: route.params.pid - 1000,
+        code: code,
+        input: testCaseInput.value,
+        output: '',
+        language: selectedLanguage.value,
+        timeLimit: problrmStore.problemData.timeLimit,
+        memoryLimit: problrmStore.problemData.memoryLimit,
+        stackLimit: problrmStore.problemData.stackLimit,
+    });
+    console.log(ret);
+    showTestCase.value = true;
+
+    // 获取评测结果
+    testFinish = false;
+    isPolling = false;
+    getStatus();
 }
 
 // 提交代码
 const handleSubmit = async () => {
     const code = editor.getValue();
     let ret = await judgeProblem({
-        id: route.params.pid - 1000,
+        pid: route.params.pid - 1000,
         code: code
     });
     console.log(ret);
     console.log('提交代码:', code);
     console.log(route.params.pid - 1000);
 }
+
+onMounted(() => {
+    // 初始化测试输入
+    setTimeout(() => {
+        testCaseInput.value = problrmStore.problemData.caseInput;
+    },1000)
+})
 </script>
   
 <style scoped>
@@ -173,8 +250,35 @@ const handleSubmit = async () => {
     border: 1px solid #e1e4e8;
     border-radius: 6px;
     overflow: hidden;
-    /* background-color: #1e1e1e; */
     color: #1e1e1e;
+}
+
+.close-test-case {
+    position: relative;
+    left: 935px;
+    top: 30px;
+    cursor: pointer;
+}
+
+.test-case {
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 5px 20px 5px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+    .Finished,
+    .Accepted {
+        color: #4CAF50;
+    }
+
+    .WorryAnswer {
+        color: red;
+    }
+
+    .run-status {}
 }
 
 .language-selector {
@@ -190,7 +294,7 @@ const handleSubmit = async () => {
 .language-selector img {
     width: 25px;
     height: 22px;
-    margin: 0 0 -4px 20px;    
+    margin: 0 0 -4px 20px;
     cursor: pointer;
 }
 
