@@ -33,18 +33,53 @@
         </div>
     </div>
     <!-- 测试样例 -->
-    <el-icon class="close-test-case" v-show="showTestCase" @click="showTestCase = false"><CloseBold /></el-icon>
-    <div class="test-case" v-show="showTestCase">
+    <div class="judge" v-if="showTestCase">
         <div class="run-status">
-            <span>代码运行状态: </span>
-            <span :class="runStatus">{{ runStatus }}</span>
+            <span>代码运行状态：</span>
+            <span :class="runStatus" v-if="!isJudging">{{ runStatus }}</span>
+            <!-- 判题状态区域 -->
+            <el-icon class="is-loading" v-if="isJudging">
+                <Loading />
+            </el-icon>
         </div>
-        <div>输入: </div>
+        <div class="pad">输入：</div>
         <el-input v-model="testCaseInput" />
-        <div>输出: </div>
+        <div class="pad">输出：</div>
         <el-input v-model="testCaseOutput" disabled />
+        <div class="pad">
+            <span>运行时间：{{ runTime }}ms</span>
+        </div>
         <div>
-            <span>运行时间: {{ runTime }}ms</span>
+            <el-icon class="close-test-case" v-if="showTestCase" @click="showTestCase = false">
+                <CloseBold />
+            </el-icon>
+        </div>
+    </div>
+
+    <!-- judge结果 -->
+    <div class="judge" v-if="showJudgeResult">
+        <div class="run-status">
+            <span>判题结果：</span>
+            <span :class="map.get(judgeResult.judgeResult)" v-if="!isJudging">{{ judgeResult.judgeResult }}</span>
+            <!-- 判题状态区域 -->
+            <el-icon class="is-loading" v-if="isJudging">
+                <Loading />
+            </el-icon>
+        </div>
+
+        <div v-if="judgeResult.judgeResult != 'Accepted'">
+            <div class="pad">输入: </div>
+            <el-input v-model="judgeResult.errorInput" />
+            <div class="pad">输出: </div>
+            <el-input v-model="judgeResult.errorOutput" disabled />
+        </div>
+        <div class="pad">
+            <span>运行时间：{{ judgeResult.runTime }}ms</span>
+        </div>
+        <div>
+            <el-icon class="close-test-case" v-if="showJudgeResult" @click="showJudgeResult = false">
+                <CloseBold />
+            </el-icon>
         </div>
     </div>
 </template>
@@ -55,16 +90,27 @@ import * as monaco from 'monaco-editor';
 import { useRoute } from 'vue-router';
 import { judgeProblem, testCase } from '@/api/problem-service.js';
 import { useProblemStore } from '@/stores/problem';
-import { getTestCaseStatus } from '@/api/judge-service.js';
+import { getTestCaseStatus, getJudgeStatus } from '@/api/judge-service.js';
+
+const map = new Map([
+  ['Accepted', 'accepted'],
+  ['Wrong Answer', 'wrong-answer'],
+])
 
 const problrmStore = useProblemStore();
 // 测试样例相关
 const testCaseInput = ref();
 const testCaseOutput = ref();
-const runTime = ref('2');
-const runStatus = ref('Finished');
+const runTime = ref();
+const runStatus = ref();
 const showTestCase = ref(false);
 
+// 判题相关
+const showJudgeResult = ref(false);
+const judgeResult = ref({});
+
+// 记录是否在评测
+const isJudging = ref(false);
 
 const route = useRoute();
 // 编辑器实例
@@ -73,14 +119,14 @@ let editor = null
 
 // 语言配置
 const languages = ref([
-    { value: 'C', label: 'C' },
-    { value: 'C++', label: 'C++' },
-    { value: 'Java', label: 'Java' },
+    { value: 'c', label: 'C' },
+    { value: 'cpp', label: 'C++' },
+    { value: 'java', label: 'Java' },
     { value: 'python', label: 'Python' },
-    { value: 'JavaScript', label: 'JavaScript' }
+    { value: 'javaScript', label: 'JavaScript' }
 ])
 // 默认选择语言
-const selectedLanguage = ref('C++')
+const selectedLanguage = ref('cpp')
 
 // 字体大小
 const fontSize = ref(20);
@@ -146,7 +192,7 @@ onMounted(() => {
     editor = monaco.editor.create(editorContainer.value, {
         //   value: codeTemplates[selectedLanguage.value],
         language: selectedLanguage.value,
-        theme: 'vs',
+        theme: 'CodeSampleTheme',
         automaticLayout: true,
         minimap: { enabled: false },
         fontSize: 20,
@@ -174,9 +220,8 @@ const changeLanguage = () => {
 
 let isPolling = false;
 let testCaseTimeout = null;
-let testFinish = false;
 async function getStatus() {
-    if (isPolling || testFinish) return;
+    if (isPolling || !(isJudging.value)) return;
     isPolling = true;
     if (testCaseTimeout) clearTimeout(testCaseTimeout);
 
@@ -185,14 +230,16 @@ async function getStatus() {
 
     // 检查是否运行完成
     if (ret.data.status != undefined && ret.data.status != 'padding') {
-        runStatus.value = ret.data.status;
-        if (ret.data.status == 'Finished') {
+        if (ret.data.status == 'Accepted') {
             testCaseOutput.value = ret.data.testCaseResult;
+            runTime.value = ret.data.runTime;
+            runStatus.value = ret.data.runStatus;
         } else {
             testCaseOutput.value = ret.data.runError;
+            runStatus.value = ret.data.status;
         }
         console.log(testCaseOutput.value);
-        testFinish = true;
+        isJudging.value = false;
     }
 
     isPolling = false;
@@ -203,9 +250,12 @@ async function getStatus() {
 
 // 调试代码
 const handleDebug = async () => {
+    showJudgeResult.value = false;
+    showTestCase.value = true;
+
     const code = editor.getValue();
     console.log(problrmStore.problemData);
-    let ret = await testCase({
+    await testCase({
         pid: route.params.pid - 1000,
         code: code,
         input: testCaseInput.value,
@@ -215,32 +265,65 @@ const handleDebug = async () => {
         memoryLimit: problrmStore.problemData.memoryLimit,
         stackLimit: problrmStore.problemData.stackLimit,
     });
-    console.log(ret);
-    showTestCase.value = true;
 
     // 获取评测结果
-    testFinish = false;
     isPolling = false;
+    isJudging.value = true;
     getStatus();
+}
+
+let isPolling2 = false;
+let judgeTimeout;
+async function getJStatus() {
+    if (isPolling2 || !(isJudging.value)) return;
+    isPolling2 = true;
+    if (judgeTimeout) clearTimeout(judgeTimeout);
+
+    let ret = await getJudgeStatus({ pid: route.params.pid - 1000 });
+    console.log(ret);
+
+    // 检查是否运行完成
+    if (ret.data.status != undefined && ret.data.status != 'padding') {
+        judgeResult.value.judgeResult = ret.data.judgeResult;
+        judgeResult.value.runTime = ret.data.runTime;
+        judgeResult.value.errorInput = ret.data.errorInput;
+        judgeResult.value.errorOutput = ret.data.errorOutput;
+        isJudging.value = false;
+    }
+
+    isPolling2 = false;
+    judgeTimeout = setTimeout(() => {
+        getJStatus();
+    }, 200);
 }
 
 // 提交代码
 const handleSubmit = async () => {
+    showTestCase.value = false;
+    showJudgeResult.value = true;
     const code = editor.getValue();
-    let ret = await judgeProblem({
+    await judgeProblem({
         pid: route.params.pid - 1000,
-        code: code
+        code: code,
+        input: problrmStore.problemData.answerInput,
+        output: problrmStore.problemData.answerOutput,
+        language: selectedLanguage.value,
+        timeLimit: problrmStore.problemData.timeLimit,
+        memoryLimit: problrmStore.problemData.memoryLimit,
+        stackLimit: problrmStore.problemData.stackLimit,
     });
-    console.log(ret);
-    console.log('提交代码:', code);
-    console.log(route.params.pid - 1000);
+
+    // 获取判题结果
+    isPolling2 = false;
+    isJudging.value = true;
+    getJStatus();
 }
 
 onMounted(() => {
     // 初始化测试输入
     setTimeout(() => {
         testCaseInput.value = problrmStore.problemData.caseInput;
-    },1000)
+    }, 1000)
 })
 </script>
   
@@ -254,14 +337,29 @@ onMounted(() => {
 }
 
 .close-test-case {
-    position: relative;
-    left: 935px;
-    top: 30px;
+    position: absolute;
+    left: 1840px;
+    bottom: 150px;
     cursor: pointer;
 }
 
-.test-case {
-    height: 200px;
+.judge {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 20px 5px 20px 5px;
+    border: 1px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pad {
+    padding: 10px 0 0 0;
+}
+
+
+.judge {
+    height: auto;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -270,15 +368,22 @@ onMounted(() => {
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 
     .Finished,
-    .Accepted {
+    .accepted {
         color: #4CAF50;
     }
 
-    .WorryAnswer {
+    .wrong-answer {
         color: red;
     }
 
-    .run-status {}
+    .run-status {
+        display: flex;
+        padding: 10px 0 10px 0;
+
+        .is-loading {
+            margin: 0 0 0 10px;
+        }
+    }
 }
 
 .language-selector {
@@ -308,7 +413,7 @@ onMounted(() => {
 }
 
 .editor-container {
-    min-height: 600px;
+    min-height: 580px;
     height: auto;
 }
 

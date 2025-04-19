@@ -75,7 +75,7 @@ const handleLogin = async () => {
 // 检查是否已经登录
 const checkUserLogin = async () => {
     let res = await checkLogin();
-    if(res.data.code == 200) {
+    if(res.code == 200) {
         router.push('/');
     }
 }

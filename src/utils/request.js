@@ -1,6 +1,8 @@
 import axios from 'axios';
 import { ElMessage } from 'element-plus';
+import { useRouter } from 'vue-router';
 
+const router = useRouter();
 const instance = axios.create({
   timeout: 5000,
   baseURL: '/api',
@@ -30,16 +32,23 @@ instance.interceptors.response.use(
     return response.data;
   },
   error => {
+    console.log(error.response.status);
     if (error.response) {
-      switch (error.response.code) {
+      switch (error.response.status) {
         case 401:
-          router.push('/401')
+          ElMessage.error('用户未登录')
           break;
         case 404:
-          router.push('/404')
+          router.push('请求资源不存在')
           break;
         case 500:
           ElMessage.error('服务器故障')
+          break;
+        case 503:
+          ElMessage.error('服务器正在维护...')
+          break;
+        default:
+          ElMessage.error('请求资源失败')
           break;
       }
     }

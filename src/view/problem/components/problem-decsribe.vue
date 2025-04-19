@@ -81,6 +81,8 @@ const getProblemMsg = async () => {
     problem.value.id = res.data.id;
     problem.value.title = res.data.title;
     problem.value.caseInput = res.data.caseInput;
+    problem.value.answerInput = res.data.answerInput;
+    problem.value.answerOutput = res.data.answerOutput;
     problem.value.content = res.data.content;
     problem.value.submitNum = res.data.submitNum;
     problem.value.acceptNum = res.data.acceptNum;

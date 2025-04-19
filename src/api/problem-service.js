@@ -30,3 +30,10 @@ export const testCase = (data) => {
         data: data
     });
 }
+
+export const getJudgeRecordList = (id) => {
+    return request({
+        method: 'get',
+        url: `/problem/getJudgeRecordList/${id}`,
+    });
+}

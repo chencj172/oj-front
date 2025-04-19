@@ -24,7 +24,7 @@ import { ref, onMounted } from 'vue';
 import head_picture from '@/view/user-service/components/head-picture.vue';
 import login_register_button from '@/view/user-service/components/login-register.vue';
 import { useRouter } from 'vue-router';
-import { getUserInfo } from '@/api/user-service.js';
+import { checkLogin, getUserInfo } from '@/api/user-service.js';
 import { ElMessage } from 'element-plus';
 
 const userInfo = ref({
@@ -33,6 +33,12 @@ const userInfo = ref({
 });
 
 const checkUserInfo = async () => {
+    const checkRes = await checkLogin();
+    console.log(checkRes);
+    if (checkRes.code != 200) {
+        // 用户未登录直接返回
+        return;
+    }
     // 根据token检查用户信息
     const res = await getUserInfo();
     if (res.code != 200) {

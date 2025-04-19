@@ -6,3 +6,10 @@ export const getTestCaseStatus = (data) => {
         url: `/judge/getTestCaseStatus/${data.pid}`,
     });
 }
+
+export const getJudgeStatus = (data) => {
+    return request({
+        method: 'get',
+        url: `/judge/getJudgeStatus/${data.pid}`,
+    });
+}
