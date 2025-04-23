@@ -6,7 +6,7 @@
       <div v-for="submission in submissions" class="submission-item">
         <div class="submission-meta">
           <!-- <span class="submission-id">#{{ submission.id }}</span> -->
-          <span class="submission-status" :class="submission.status">
+          <span class="submission-status" :class="submission.status" @click="show_judge_detail(submission.id)">
             {{ submission.statusText }}
           </span>
           <span class="submission-time">{{ submission.time }}</span>
@@ -22,12 +22,13 @@
   
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { getJudgeRecordList } from '@/api/problem-service.js';
 import dayjs from 'dayjs';
 
 const route = useRoute();
-const pid = route.params.pid - 1000;
+const router = useRouter();
+const pid = route.query.pid - 1000;
 const submissions = ref([]);
 
 const map = new Map([
@@ -35,12 +36,23 @@ const map = new Map([
   ['Wrong Answer', 'wrong-answer'],
 ])
 
+const show_judge_detail = (id) => {
+  router.push({
+    name: 'submissions-detail',
+    query: {
+      id: id,
+      pid: route.query.pid  // 带上pid，否则后续参数会丢失
+    }
+  });
+}
+
 // 获取提交记录
 const fetchSubmissions = async () => {
   let res = await getJudgeRecordList(pid);
   console.log(res.data.judgeRecordList);
   res.data.judgeRecordList.forEach((element) => {
     let item = {};
+    item.id = element.id;
     item.status = map.get(element.judgeResult);
     item.statusText = element.judgeResult;
     item.time = dayjs(new Date(element.createTime).getTime()).format('YYYY-MM-DD HH:mm:ss');
@@ -90,6 +102,8 @@ onMounted(() => {
 .submission-list {
   border: 1px solid #eaecef;
   border-radius: 6px;
+  height: 800px;
+  overflow-y: auto;
 }
 
 .submission-item {

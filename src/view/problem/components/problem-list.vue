@@ -23,12 +23,12 @@
             <el-table :data="problemData" stripe class="problem-table" table-layout="auto">
                 <el-table-column prop="status" label="状态">
                     <template #default="scope">
-                        <!-- 1表示通过；2表示正在尝试还没通过；3表示未尝试  -->
+                        <!-- 0表示正在尝试还没通过；1表示通过；2表示未尝试  -->
                         <el-icon v-if="scope.row.status == 1" style="color: green;"><Select /></el-icon>
-                        <el-icon v-else-if="scope.row.status == 2" style="color: rgb(255, 201, 38);">
+                        <el-icon v-else-if="scope.row.status == 0" style="color: rgb(255, 201, 38);">
                             <KnifeFork />
                         </el-icon>
-                        <el-icon v-else-if="scope.row.status == 3"></el-icon>
+                        <el-icon v-else-if="scope.row.status == 2"></el-icon>
                     </template>
                 </el-table-column>
                 <el-table-column prop="pid" label="题目ID" />
@@ -57,15 +57,11 @@
     </div>
     <div class="limit-pnum">
         <div>
-            <el-pagination 
-                @change="page_change" 
-                v-model:current-page="page_num" 
-                v-model:page-size="page_size"
-                background layout="prev, pager, next"
-                :total="total" />
+            <el-pagination @change="searchProblem" v-model:current-page="page_num" v-model:page-size="page_size" background
+                layout="prev, pager, next" :total="total" />
         </div>
         <div>
-            <el-select v-model="page_size" style="width: 1.4rem" @change="option_change" class="select-page">
+            <el-select v-model="page_size" style="width: 1.4rem" class="select-page">
                 <el-option v-for="item in options" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
         </div>
@@ -113,11 +109,11 @@ const searchProblem = async () => {
 
     res.data.records.forEach((element) => {
         problemData.value.push({
-            status: element.status == undefined ? 3 : element.status,
+            status: element.status == undefined ? 2 : element.status,
             pid: 1000 + element.id,
             pname: element.title,
             level: element.level,
-            ac_rate: `${element.submitNum == 0 ? 0 : element.acceptNum / element.submitNum} %`,
+            ac_rate: `${element.submitNum == 0 ? 0 : (element.acceptNum / element.submitNum * 100).toFixed(2)} %`,
             label: ['回文', 'dfs', 'DP']
         })
     });
@@ -149,25 +145,18 @@ const getTagColor = (tag) => {
 };
 
 const show_detail = (pid) => {
+    // console.log(pid);
     // 请求题目数据，然后进行显示
     const c = router.resolve({
-        name: 'detail',
-        params: {
-            pid: pid
+        name: 'problem-detail',
+        query: {
+            pid: pid,
+            origin: 1,
         }
     });
     window.open(c.href, "_blank");
 }
 
-// 每页显示条数变化的回调函数
-const option_change = () => {
-    searchProblem();
-}
-
-// 页数变化
-const page_change = () => {
-    searchProblem();
-}
 
 
 onMounted(() => {

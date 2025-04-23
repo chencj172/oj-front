@@ -6,6 +6,7 @@ import problem from '@/view/problem/problem-index.vue';
 import problem_detail from '@/view/problem/components/problem-detail.vue';
 import problem_describe from '@/view/problem/components/problem-decsribe.vue';
 import problem_submissions from '@/view/problem/components/problem-submissions.vue';
+import problem_submissions_detail from '@/view/problem/components/submissions-detail.vue';
 import train from '@/view/train/train-index.vue';
 import community from '@/view/community/community-index.vue';
 import about from '@/view/about/about-index.vue';
@@ -66,20 +67,25 @@ const routes = [
     name: 'problem-detail',
     component: problem_detail,  
     children: [
+      // {
+      //   path: '',
+      //   name: 'detail',
+      //   component: problem_detail,
+      // },
       {
-        path: ':pid',
-        name: 'detail',
-        component: problem_detail,
-      },
-      {
-        path: 'describe/:pid',
+        path: 'describe',
         name: 'describe',
         component: problem_describe,
       },
       {
-        path: 'submissions/:pid',
+        path: 'submissions',
         name: 'submissions',
         component: problem_submissions,
+      },
+      {
+        path: 'submissions/detail',
+        name: 'submissions-detail',
+        component: problem_submissions_detail,
       },
     ]
   },

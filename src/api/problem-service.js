@@ -37,3 +37,31 @@ export const getJudgeRecordList = (id) => {
         url: `/problem/getJudgeRecordList/${id}`,
     });
 }
+
+export const getJudgeRecordDetail = (id) => {
+    return request({
+        method: 'get',
+        url: `/problem/getJudgeRecordDetail/${id}`,
+    });
+}
+
+export const getProblemOfMonth = (timeStamp) => {
+    return request({
+        method: 'get',
+        url: `/sign/getProblemOfMonth/${timeStamp}`,
+    });
+}
+
+export const getUserSign = (date) => {
+    return request({
+        method: 'get',
+        url: `/sign/getUserSign/${date}`,
+    });
+}
+
+export const sign = () => {
+    return request({
+        method: 'put',
+        url: '/sign',
+    });
+}

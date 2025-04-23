@@ -225,7 +225,7 @@ async function getStatus() {
     isPolling = true;
     if (testCaseTimeout) clearTimeout(testCaseTimeout);
 
-    let ret = await getTestCaseStatus({ pid: route.params.pid - 1000 });
+    let ret = await getTestCaseStatus({ pid: route.query.pid - 1000 });
     console.log(ret);
 
     // 检查是否运行完成
@@ -256,7 +256,7 @@ const handleDebug = async () => {
     const code = editor.getValue();
     console.log(problrmStore.problemData);
     await testCase({
-        pid: route.params.pid - 1000,
+        pid: route.query.pid - 1000,
         code: code,
         input: testCaseInput.value,
         output: '',
@@ -279,7 +279,7 @@ async function getJStatus() {
     isPolling2 = true;
     if (judgeTimeout) clearTimeout(judgeTimeout);
 
-    let ret = await getJudgeStatus({ pid: route.params.pid - 1000 });
+    let ret = await getJudgeStatus({ pid: route.query.pid - 1000 });
     console.log(ret);
 
     // 检查是否运行完成
@@ -303,7 +303,7 @@ const handleSubmit = async () => {
     showJudgeResult.value = true;
     const code = editor.getValue();
     await judgeProblem({
-        pid: route.params.pid - 1000,
+        pid: route.query.pid - 1000,
         code: code,
         input: problrmStore.problemData.answerInput,
         output: problrmStore.problemData.answerOutput,
@@ -311,6 +311,7 @@ const handleSubmit = async () => {
         timeLimit: problrmStore.problemData.timeLimit,
         memoryLimit: problrmStore.problemData.memoryLimit,
         stackLimit: problrmStore.problemData.stackLimit,
+        origin: route.query.origin
     });
 
     // 获取判题结果

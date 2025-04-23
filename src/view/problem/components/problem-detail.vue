@@ -32,7 +32,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { Editor } from '@bytemd/vue-next';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 import site_footer from '@/view/footer.vue';
 import site_header from '@/view/header.vue';
 import code_edit from './code-edit.vue';
@@ -44,12 +44,17 @@ const rightPanel = ref(null)
 let isDragging = false
 
 const router = useRouter();
+const route = useRoute();
 
 // 题目详情
 const problem_describe = () => {
     activeTab.value = 'description';
     router.push({
-        name: 'describe',   
+        name: 'describe',
+        query: {
+            pid: route.query.pid,
+            origin: route.query.origin,
+        }
     })
 }
 
@@ -58,6 +63,10 @@ const problem_submissions = () => {
     activeTab.value = 'submissions';
     router.push({
         name: 'submissions',   
+        query: {
+            pid: route.query.pid,
+            origin: route.query.origin
+        }
     })
 }
 

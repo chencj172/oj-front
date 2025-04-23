@@ -5,11 +5,11 @@
         </div>
         <!-- 头部控制 -->
         <div class="calendar-header">
-            <button @click="prevMonth"><el-icon>
+            <button @click="prevMonth" :class="preButtonClass"><el-icon>
                     <ArrowLeft />
                 </el-icon></button>
             <span>{{ currentMonth }}</span>
-            <button @click="nextMonth"><el-icon>
+            <button @click="nextMonth" :class="postButtonClass"><el-icon>
                     <ArrowRight />
                 </el-icon></button>
         </div>
@@ -24,14 +24,14 @@
             <div v-for="day in days" :key="day.date" class="day" :class="{
                 'current-month': day.isCurrentMonth,
                 'today': isToday(day.date)
-            }" @click="toggleCheck(day.date)" @mouseover="showMsg(day.date)" @mouseleave="hoverDate = null">
+            }" @click="toggleCheck(day.date)" @mouseover="showMsg(day.date)" @mouseleave="hoverDate = {}">
                 {{ day.day }}
                 <span v-if="isChecked(day.date)"><el-icon class="check-marker">
                         <SuccessFilled />
                     </el-icon></span>
                 <span v-if="isToday(day.date)" class="today-marker">今</span>
-                <div v-if="hoverDate === day.date" class="day-problem">
-                    {{ day.date }}
+                <div v-if="hoverDate.date === day.date" class="day-problem">
+                    {{ hoverDate.title }}
                 </div>
             </div>
         </div>
@@ -42,23 +42,59 @@
   
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { getProblemOfMonth, getUserSign, sign } from '@/api/problem-service.js'
+import dayjs from 'dayjs';
+import { ElMessage } from 'element-plus';
+import { useRouter } from 'vue-router';
 
-const weekDays = ['日', '一', '二', '三', '四', '五', '六']
+const router = useRouter();
+const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
+const realCurrentDate = new Date();
 const currentDate = ref(new Date())
 const checkedDates = ref({
     "2025-03-05": true,
     "2025-03-07": true,
     "2025-03-12": true
 })
-const hoverDate = ref(null);
+const hoverDate = ref({});
+const dailyProblemList = ref({});
+const preButtonClass = ref('calendar-active-button');
+const postButtonClass = ref('calendar-disable-button');
 
-// 从后端加载本月打卡记录
+// 获得本月题目数据
+const getDailyProblemData = async (timeStamp) => {
+    dailyProblemList.value = {};
+    let res = await getProblemOfMonth(timeStamp);
+    res.data.dailyProblemList.forEach((element) => {
+        let item = {};
+        item.pid = element.pid + 1000;
+        item.title = (element.pid + 1000) + '.' + element.title;
+
+        dailyProblemList.value[element.createTime.split('T')[0]] = item;
+    });
+    // console.log(dailyProblemList.value);
+}
+
+// 获得本月打卡记录
+const getUserSignResult = async (date) => {
+    // console.log(dayjs(date).format('YYYYMM'));
+    let res = await getUserSign(dayjs(date).format('YYYYMM'));
+    checkedDates.value = res.data;
+}
+
+// 加载本月打卡记录
 onMounted(() => {
+    // 获取本月每日一题的题目
+    getDailyProblemData(new Date().getTime());
+    getUserSignResult(new Date());
 })
 
 // 悬停显示每日一题题目
 const showMsg = (date) => {
-    hoverDate.value = date;
+    if(dailyProblemList.value[date] != undefined) {
+        hoverDate.value.date = date;
+        hoverDate.value.title = dailyProblemList.value[date].title;
+    }
 }
 
 // 生成月份标题
@@ -108,7 +144,19 @@ const days = computed(() => {
 
 // 点击跳转到每日一题
 const toggleCheck = (date) => {
-    console.log(date);
+    if (dailyProblemList.value[date] == undefined) {
+        ElMessage.error('暂未生成题目数据');
+        return ;
+    }
+    console.log(dailyProblemList.value[date].pid);
+    const c = router.resolve({
+        name: 'problem-detail',
+        query: {
+            pid: dailyProblemList.value[date].pid,
+            origin: 2,
+        }
+    });
+    window.open(c.href, "_blank");
 }
 
 // 判断是否是今天
@@ -126,19 +174,39 @@ const formatDate = (date) => {
     return date.toISOString().split('T')[0]
 }
 
-// 切换月份，重新请求打卡数据
+// 切换月份，重新请求打卡数据，只能请求近五年的每日一题数据
 const prevMonth = () => {
+    postButtonClass.value = 'calendar-active-button';
+    if(realCurrentDate.getFullYear() - currentDate.value.getFullYear() > 5) {
+        preButtonClass.value = 'calendar-disable-button';
+        return ;
+    }
     currentDate.value = new Date(
         currentDate.value.getFullYear(),
         currentDate.value.getMonth() - 1
     )
+    getUserSignResult(new Date(currentDate.value));
+    getDailyProblemData(new Date(currentDate.value).getTime());
+    preButtonClass.value = 'calendar-active-button';
+
 }
 
 const nextMonth = () => {
+    preButtonClass.value = 'calendar-active-button';
+    // 如果是当前月份就不允许前进
+    if(currentDate.value.getFullYear() == realCurrentDate.getFullYear() && currentDate.value.getMonth() == realCurrentDate.getMonth()) {
+        return ;
+    }
     currentDate.value = new Date(
         currentDate.value.getFullYear(),
         currentDate.value.getMonth() + 1
     )
+    getUserSignResult(new Date(currentDate.value));
+    getDailyProblemData(new Date(currentDate.value).getTime());
+    postButtonClass.value = 'calendar-active-button';
+    if(currentDate.value.getFullYear() == realCurrentDate.getFullYear() && currentDate.value.getMonth() == realCurrentDate.getMonth()) {
+        postButtonClass.value = 'calendar-disable-button';
+    }
 }
 </script>
   
@@ -195,6 +263,14 @@ const nextMonth = () => {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 20px;
+
+    .calendar-active-button {
+        background-color: #007bff;
+    }
+
+    .calendar-disable-button {
+        background-color: gray;
+    }
 
     span {
         font-size: 25px;
@@ -262,7 +338,7 @@ const nextMonth = () => {
 .today-marker {
     position: absolute;
     top: 2px;
-    right: 2px;
+    left: 2px;
     font-size: 0.6em;
     color: #ff6b6b;
 }

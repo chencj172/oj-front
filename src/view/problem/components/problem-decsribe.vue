@@ -42,7 +42,6 @@ const problem = ref({
     stackLimit: '',
 });
 
-
 const problemContent = ref(`
 ## 输入两个整数，求这两个整数的和是多少
 
@@ -76,7 +75,7 @@ $E = mc^2$
 `);
 
 const getProblemMsg = async () => {
-    let res = await getProblemById(route.params.pid - 1000);
+    let res = await getProblemById(route.query.pid - 1000);
     console.log(res.data);
     problem.value.id = res.data.id;
     problem.value.title = res.data.title;
