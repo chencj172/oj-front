@@ -42,7 +42,7 @@
   
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { getProblemOfMonth, getUserSign, sign } from '@/api/problem-service.js'
+import { getProblemOfMonth, getUserSign } from '@/api/problem-service.js'
 import dayjs from 'dayjs';
 import { ElMessage } from 'element-plus';
 import { useRouter } from 'vue-router';
