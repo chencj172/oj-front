@@ -91,6 +91,8 @@ import { useRoute } from 'vue-router';
 import { judgeProblem, testCase } from '@/api/problem-service.js';
 import { useProblemStore } from '@/stores/problem';
 import { getTestCaseStatus, getJudgeStatus } from '@/api/judge-service.js';
+import { getChallengeResult } from '@/api/pk-service.js';
+import { ElMessage } from 'element-plus';
 
 const map = new Map([
   ['Accepted', 'accepted'],
@@ -289,6 +291,17 @@ async function getJStatus() {
         judgeResult.value.errorInput = ret.data.errorInput;
         judgeResult.value.errorOutput = ret.data.errorOutput;
         isJudging.value = false;
+
+        if(ret.data.judgeResult == 'Accepted') {
+            // 看挑战是否成功
+            getChallengeResult().then((res) => {
+                if(res.data === 'victory') {
+                    ElMessage.success('挑战成功');
+                } else {
+                    ElMessage.warning('挑战失败');
+                }
+            })
+        }
     }
 
     isPolling2 = false;

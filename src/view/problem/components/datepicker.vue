@@ -52,9 +52,9 @@ const weekDays = ['日', '一', '二', '三', '四', '五', '六'];
 const realCurrentDate = new Date();
 const currentDate = ref(new Date())
 const checkedDates = ref({
-    "2025-03-05": true,
-    "2025-03-07": true,
-    "2025-03-12": true
+    // "2025-03-05": true,
+    // "2025-03-07": true,
+    // "2025-03-12": true
 })
 const hoverDate = ref({});
 const dailyProblemList = ref({});

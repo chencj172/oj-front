@@ -41,7 +41,8 @@ const show_judge_detail = (id) => {
     name: 'submissions-detail',
     query: {
       id: id,
-      pid: route.query.pid  // 带上pid，否则后续参数会丢失
+      pid: route.query.pid,  // 带上pid，否则后续参数会丢失
+      origin: route.query.origin
     }
   });
 }
