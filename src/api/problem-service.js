@@ -59,9 +59,9 @@ export const getUserSign = (date) => {
     });
 }
 
-export const sign = () => {
+export const getAllTag = () => {
     return request({
-        method: 'put',
-        url: '/sign',
+        method: 'get',
+        url: '/problem/getAllTag',
     });
 }

@@ -13,7 +13,8 @@
 </template>
   
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { getAllTag } from '@/api/problem-service';
 
 const tags = ref([
     '数组', '矩阵乘法', 'DP', '入门',
@@ -57,6 +58,19 @@ const getTextColor = (tag) => {
     const brightness = (r * 299 + g * 587 + b * 114) / 1000;
     return brightness > 150 ? '#333' : '#fff';
 };
+
+// 初始化标签数据
+const initTagData = async () => {
+    let res = await getAllTag();
+    tags.value = [];
+    res.data.forEach((element) => {
+        tags.value.push(element);
+    })
+}
+
+onMounted(() => {
+    initTagData();
+})
 </script>
   
 <style scoped>

@@ -25,6 +25,9 @@ instance.interceptors.request.use(
     return Promise.reject(error);
   }
 );
+const error_msg = (msg) => {
+  ElMessage.error({message: msg, duration: 2000});
+}
 
 // 响应拦截器
 instance.interceptors.response.use(
@@ -36,19 +39,19 @@ instance.interceptors.response.use(
     if (error.response) {
       switch (error.response.status) {
         case 401:
-          ElMessage.error('用户未登录')
+          error_msg('用户未登录');
           break;
         case 404:
           router.push('请求资源不存在')
           break;
         case 500:
-          ElMessage.error('服务器故障')
+          error_msg('服务器故障');
           break;
         case 503:
-          ElMessage.error('服务器正在维护...')
+          error_msg('服务器正在维护...');
           break;
         default:
-          ElMessage.error('请求资源失败')
+          error_msg('请求资源失败');
           break;
       }
     }

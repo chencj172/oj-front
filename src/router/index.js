@@ -12,6 +12,8 @@ import community from '@/view/community/community-index.vue';
 import about from '@/view/about/about-index.vue';
 import pk from '@/view/pk/pk-index.vue';
 import home from '@/view/home/home-index.vue';
+import createPost from '@/view/community/components/createPost.vue';
+import posts from '@/view/community/components/Posts.vue';
 
 import error_401 from '@/view/error/401.vue';
 import error_404 from '@/view/error/404.vue';
@@ -61,6 +63,16 @@ const routes = [
         component: about,
       },
     ],
+  },
+  {
+    path: '/community/createPost',
+    name: 'createPost',
+    component: createPost,
+  },
+  {
+    path: '/community/detail/:id',
+    name: 'PostsDetail',
+    component: posts,
   },
   {
     path: '/problem/detail',
